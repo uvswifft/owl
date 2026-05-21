@@ -254,7 +254,43 @@ func (a IPCAPI) fillRTMPPushAddr(c *gin.Context, items []*ipc.Channel) {
 
 func (a IPCAPI) editChannel(c *gin.Context, in *ipc.EditChannelInput) (any, error) {
 	cid := c.Param("id")
-	return a.ipc.EditChannel(c.Request.Context(), in, cid)
+	ctx := c.Request.Context()
+
+	old, err := a.ipc.GetChannel(ctx, cid)
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := a.ipc.EditChannel(ctx, in, cid)
+	if err != nil {
+		return nil, err
+	}
+
+	// 流地址变更时，主动通知 ZLM 关闭旧的拉流
+	if old.Config.SourceURL != "" && old.Config.SourceURL != out.Config.SourceURL {
+		go a.closeOldStream(old)
+	}
+
+	return out, nil
+}
+
+// closeOldStream 流地址变更后关闭旧的 ZLM 拉流
+func (a IPCAPI) closeOldStream(ch *ipc.Channel) {
+	svr, err := a.uc.SMSAPI.smsCore.GetMediaServer(context.Background(), sms.DefaultMediaServerID)
+	if err != nil {
+		slog.Warn("editChannel: 获取流媒体服务器失败", "err", err)
+		return
+	}
+	resp, err := a.uc.SMSAPI.smsCore.CloseStreams(svr, zlm.CloseStreamsRequest{
+		App:    ch.GetApp(),
+		Stream: ch.GetStream(),
+		Force:  true,
+	})
+	if err != nil {
+		slog.Error("editChannel: 关闭旧流失败", "app", ch.GetApp(), "stream", ch.GetStream(), "err", err)
+		return
+	}
+	slog.Info("editChannel: 旧流已关闭", "app", ch.GetApp(), "stream", ch.GetStream(), "closed", resp.CountClosed)
 }
 
 // addChannel 添加 RTMP/RTSP 通道

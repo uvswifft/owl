@@ -47,10 +47,11 @@
 
 + lalmax 已支持 zlm 接口，[lalmax](https://github.com/q191201771/lalmax)
 
-+ **lalmax-pro 有 golang 流媒体的需求请联系微信 [joezhang202512](https://github.com/joestarzxh)(备注留言gowvp)**
++ **lalmax-pro 有 golang 企业级流媒体的需求请联系微信 [joestar2006](https://github.com/joestarzxh)(备注留言gowvp)**
   - 对环境没有要求，不需要安装任何静态库，支持跨平台编译
   - 支持特色功能定制
   - 支持 G711(G711A/G711U) 转 AAC
+  - 支持 AAC 转 opus 音频转码
 
 项目框架基于 @ixugo [goddd](https://github.com/ixugo/goddd)
 
