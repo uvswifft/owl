@@ -295,7 +295,7 @@ func (s *Server) handlerRequest(msg *Request) {
 		body := msg.Body()
 		var msg MessageReceive
 		if err := XMLDecode(body, &msg); err != nil {
-			slog.Error("xml decode err")
+			slog.Error("xml decode err", "body", string(body), "err", err)
 			return
 		}
 		key += "-" + msg.CmdType

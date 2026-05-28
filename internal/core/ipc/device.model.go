@@ -88,6 +88,19 @@ func (d *Device) GetID() string {
 	return d.ID
 }
 
+func (d *Device) GetName() string {
+	if d.Name != "" {
+		return d.Name
+	}
+	if d.Ext.Name != "" {
+		return d.Ext.Name
+	}
+	if d.DeviceID != "" {
+		return d.DeviceID
+	}
+	return d.ID
+}
+
 func (d *Device) GetGB28181DeviceID() string {
 	// if d.Username != "" {
 	// return d.Username

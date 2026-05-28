@@ -246,7 +246,8 @@ services:
     # network_mode: host
     ports:
       # gb28181
-      - 15123:15123 # 管理平台 http 端口
+      - 15123:15123 # HTTP：Web 管理 + ONVIF SOAP 服务端
+      - 3702:3702/udp # ONVIF WS-Discovery 组播发现
       - 15060:15060 # gb28181 sip tcp 端口
       - 15060:15060/udp # gb28181 sip udp 端口
       # zlm
@@ -318,7 +319,8 @@ services:
   - [x] 快照
   - [x] 支持跨域
   - [ ] 卡存录像回放(由 摄像头 录制在SD卡，暂无开发计划)
-- [x] 支持 onvif 接入与播放
+- [x] 支持 onvif 接入与播放（客户端，发现外部摄像机）
+- [x] 支持 onvif 虚拟设备/服务端（向 Home Assistant 等暴露平台通道）
 - [x] 支持 rtmp 推流
 - [x] 支持 rtsp 拉流
 - [x] 支持 ai 算法分析与告警
@@ -327,6 +329,34 @@ services:
 - [x] 支持中文和 English
 - [x] SIP IP 限流，国外攻击特征系统防护，防止云服务被境外 sip 攻击
 
+
+## ONVIF 虚拟设备（服务端）
+
+GoWVP 可作为 **ONVIF 网络视频发送设备（NVT）**，供 Home Assistant 等系统按 ONVIF 摄像机方式接入，并通过 `GetStreamUri` 获取平台通道对应的 RTSP 地址。
+
+### 端口与防火墙（局域网）
+
+| 用途 | 协议 | 端口 | 是否要开端口 |
+| --- | --- | --- | --- |
+| Web 管理 + ONVIF SOAP | TCP | `Server.HTTP.Port`（默认 **15123**） | 仅当 HA/NVR 与 GoWVP 跨网段访问时需要；同网段一般不用单独放行 |
+| `GetStreamUri` 返回的 RTSP 拉流 | TCP | ZLM RTSP（默认 **554**，见 `docker-compose` 映射） | 客户端从 ZLM 拉流时，跨网段需能访问该端口 |
+| ONVIF WS-Discovery（本机对外广播） | UDP | **3702**（组播 `239.255.255.250`） | Docker 需映射 `3702:3702/udp`；同网段一般无需单独防火 |
+
+ONVIF SOAP 路径（与 Web 共用 HTTP 端口）：
+
+- `POST http://<主机>:15123/onvif/device_service`
+- `POST http://<host>:15123/onvif/media_service`
+
+鉴权使用 `configs/config.toml` 中的 `Server.Username` / `Server.Password`（WS-Security），与 Web 登录默认一致（`admin` / `admin`）。
+
+**Home Assistant 手动添加示例：**
+
+- 主机：`http://<局域网IP>:15123/onvif/device_service`
+- 用户名 / 密码：与 `config.toml` 中 `Server.Username`、`Server.Password` 一致
+
+**自动发现：** 启动后在本机 **UDP 3702** 应答 WS-Discovery Probe，HA 可搜索到设备；`configs/config.toml` 中 `Media.IP`（或 `Sip.Host`）会写入 `XAddrs`，宜填局域网 IP。
+
+**说明：** `GET /onvif/discover` 是 GoWVP **扫描局域网内其它 ONVIF 摄像机**（客户端能力），与上述服务端组播发现不是同一功能。
 
 ## 感谢
 

@@ -20,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gowvp/owl/internal/core/metadata/metadataapi"
 	"github.com/gowvp/owl/internal/core/sms"
+	"github.com/gowvp/owl/internal/web/onvifserver"
 	"github.com/gowvp/owl/pkg/ota"
 	"github.com/gowvp/owl/plugin/stat"
 	"github.com/gowvp/owl/plugin/stat/statapi"
@@ -100,6 +101,7 @@ func setupRouter(r *gin.Engine, uc *Usecase) {
 	})
 
 	auth := AuthMiddleware(uc.Conf.Server.HTTP.JwtSecret, uc.Conf.Server.HTTP.AuthURL)
+	onvifserver.Register(r, uc.GB28181API.ipc, uc.SMSAPI.smsCore, uc.Conf)
 	r.Any("/health", web.WrapH(uc.getHealth))
 	r.GET("/app/metrics/api", web.WrapH(uc.getMetricsAPI))
 	r.GET("/app/version/check", web.WrapH(uc.checkVersion))

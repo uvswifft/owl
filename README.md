@@ -197,7 +197,8 @@ services:
     # network_mode: host
     ports:
       # gb28181
-      - 15123:15123 # Management platform HTTP port
+      - 15123:15123 # HTTP: Web UI + ONVIF SOAP server
+      - 3702:3702/udp # ONVIF WS-Discovery (能够被其它内网 onvif 发现本平台)
       - 15060:15060 # GB28181 SIP TCP port
       - 15060:15060/udp # GB28181 SIP UDP port
       # zlm
@@ -264,13 +265,42 @@ If you're a Go developer familiar with Docker, you can download the source code 
   - [x] Snapshots
   - [x] CORS support
   - [ ] SD Recording playback (ipc, recorded on camera SD card, no development plan)
-- [x] ONVIF device access and playback
+- [x] ONVIF device access and playback (client)
+- [x] ONVIF virtual device / server (expose channels to Home Assistant, etc.)
 - [x] RTMP push streaming support
 - [x] RTSP pull streaming support
 - [x] AI algorithm analysis and alerting support
 - [x] Cloud Recording playback (owl)
 - [ ] ONVIF PTZ control support
 - [x] Chinese and English language support
+
+## ONVIF Virtual Device (Server)
+
+GoWVP can act as an **ONVIF Network Video Transmitter** so integrators (e.g. Home Assistant) can add it like a camera and pull RTSP URLs for platform channels.
+
+### Ports and firewall (LAN)
+
+| Purpose | Protocol | Port | Open in firewall? |
+| --- | --- | --- | --- |
+| Web UI + ONVIF SOAP | TCP | `Server.HTTP.Port` (default **15123**) | Only if HA/NVR is on another subnet; same LAN usually needs no extra rule |
+| RTSP playback after `GetStreamUri` | TCP | ZLM RTSP (default **554**, see `docker-compose` mapping) | Same as above when the client pulls stream from ZLM |
+| ONVIF WS-Discovery (server advertisement) | UDP | **3702** (multicast `239.255.255.250`) | Map `3702:3702/udp` in Docker; LAN usually needs no extra rule |
+
+ONVIF SOAP endpoints (same HTTP port as the web UI):
+
+- `POST http://<host>:15123/onvif/device_service`
+- `POST http://<host>:15123/onvif/media_service`
+
+Authentication uses `Server.Username` / `Server.Password` in `configs/config.toml` (WS-Security `PasswordDigest` or `PasswordText`), same defaults as web login (`admin` / `admin`).
+
+**Home Assistant (manual add):**
+
+- Host: `http://<lan-ip>:15123/onvif/device_service`
+- Username / password: values from `config.toml` `Server.Username` / `Server.Password`
+
+**Auto-discovery:** After startup, GoWVP answers WS-Discovery Probe on **UDP 3702**. Set `Media.IP` (or `Sip.Host`) in `configs/config.toml` to your LAN IP so `XAddrs` is reachable from Home Assistant.
+
+**Not the same as** `GET /onvif/discover`: that API lets GoWVP **scan the LAN for external ONVIF cameras** (client role).
 
 ## Acknowledgments
 

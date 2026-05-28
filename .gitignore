@@ -46,3 +46,4 @@ __pycache__/
 *.mp4
 owl
 .cursor/memory/
+.cursor/scopes/
