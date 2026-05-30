@@ -170,6 +170,7 @@ func (d *ZLMDriver) Setup(ctx context.Context, ms *MediaServer, webhookURL strin
 		RtspLowLatency:           new("1"),
 		GeneralUnreadyFrameCache: new("50"),
 		GeneralMergeWriteMS:      new("100"),
+		GeneralListenIP:          new("0.0.0.0"),
 
 		// 录像配置
 		// 移除默认的 "record" 目录层级，简化路径结构
