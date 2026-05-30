@@ -33,13 +33,14 @@ func GetType(stream string) string {
 
 // DeviceExt domain model
 type DeviceExt struct {
-	Manufacturer string `json:"manufacturer"` // 生产厂商
-	Model        string `json:"model"`        // 型号
-	Firmware     string `json:"firmware"`     // 固件版本
-	Name         string `json:"name"`         // 设备名
-	GBVersion    string `json:"gb_version"`   // GB版本
-	Zones        []Zone `json:"zones"`        // 区域
-	EnabledAI    bool   `json:"enabled_ai"`   // 是否启用 AI
+	Manufacturer     string  `json:"manufacturer"`      // 生产厂商
+	Model            string  `json:"model"`             // 型号
+	Firmware         string  `json:"firmware"`          // 固件版本
+	Name             string  `json:"name"`              // 设备名
+	GBVersion        string  `json:"gb_version"`        // GB版本
+	Zones            []Zone  `json:"zones"`             // 区域
+	EnabledAI        bool    `json:"enabled_ai"`        // 是否启用 AI
+	AnalysisInterval float32 `json:"analysis_interval"` // AI 分析间隔（秒），0 表示使用默认值
 
 	// 空串表示 always
 	RecordMode string `json:"record_mode"` // 录像模式, 一直录制:always, 按AI触发:ai, 不录制:none

@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalysis.proto\x12\x08\x61nalysis\"\xdd\x01\n\x12StartCameraRequest\x12\x11\n\tcamera_id\x18\x01 \x01(\t\x12\x13\n\x0b\x63\x61mera_name\x18\x02 \x01(\t\x12\x10\n\x08rtsp_url\x18\x03 \x01(\t\x12\x12\n\ndetect_fps\x18\x04 \x01(\x05\x12\x0e\n\x06labels\x18\x05 \x03(\t\x12\x11\n\tthreshold\x18\x06 \x01(\x02\x12\x12\n\nroi_points\x18\x07 \x03(\x02\x12\x13\n\x0bretry_limit\x18\x08 \x01(\x05\x12\x14\n\x0c\x63\x61llback_url\x18\n \x01(\t\x12\x17\n\x0f\x63\x61llback_secret\x18\x0b \x01(\t\"x\n\x13StartCameraResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x14\n\x0csource_width\x18\x03 \x01(\x05\x12\x15\n\rsource_height\x18\x04 \x01(\x05\x12\x12\n\nsource_fps\x18\x05 \x01(\x02\"&\n\x11StopCameraRequest\x12\x11\n\tcamera_id\x18\x01 \x01(\t\"6\n\x12StopCameraResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x0f\n\rStatusRequest\"q\n\x0eStatusResponse\x12\x10\n\x08is_ready\x18\x01 \x01(\x08\x12\'\n\x07\x63\x61meras\x18\x02 \x03(\x0b\x32\x16.analysis.CameraStatus\x12$\n\x05stats\x18\x03 \x01(\x0b\x32\x15.analysis.GlobalStats\"t\n\x0c\x43\x61meraStatus\x12\x11\n\tcamera_id\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x18\n\x10\x66rames_processed\x18\x03 \x01(\x03\x12\x12\n\nlast_error\x18\x04 \x01(\t\x12\x13\n\x0bretry_count\x18\x05 \x01(\x05\"W\n\x0bGlobalStats\x12\x16\n\x0e\x61\x63tive_streams\x18\x01 \x01(\x05\x12\x18\n\x10total_detections\x18\x02 \x01(\x03\x12\x16\n\x0euptime_seconds\x18\x03 \x01(\x03\"\x14\n\x12HealthCheckRequest\"\x8e\x01\n\x13HealthCheckResponse\x12;\n\x06status\x18\x01 \x01(\x0e\x32+.analysis.HealthCheckResponse.ServingStatus\":\n\rServingStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0b\n\x07SERVING\x10\x01\x12\x0f\n\x0bNOT_SERVING\x10\x02\x32\xe6\x01\n\x0f\x41nalysisService\x12J\n\x0bStartCamera\x12\x1c.analysis.StartCameraRequest\x1a\x1d.analysis.StartCameraResponse\x12G\n\nStopCamera\x12\x1b.analysis.StopCameraRequest\x1a\x1c.analysis.StopCameraResponse\x12>\n\tGetStatus\x12\x17.analysis.StatusRequest\x1a\x18.analysis.StatusResponse2N\n\x06Health\x12\x44\n\x05\x43heck\x12\x1c.analysis.HealthCheckRequest\x1a\x1d.analysis.HealthCheckResponseB\nZ\x08./protosb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalysis.proto\x12\x08\x61nalysis\"\xea\x01\n\x12StartCameraRequest\x12\x11\n\tcamera_id\x18\x01 \x01(\t\x12\x13\n\x0b\x63\x61mera_name\x18\x02 \x01(\t\x12\x10\n\x08rtsp_url\x18\x03 \x01(\t\x12\x1f\n\x17\x64\x65tect_interval_seconds\x18\x04 \x01(\x02\x12\x0e\n\x06labels\x18\x05 \x03(\t\x12\x11\n\tthreshold\x18\x06 \x01(\x02\x12\x12\n\nroi_points\x18\x07 \x03(\x02\x12\x13\n\x0bretry_limit\x18\x08 \x01(\x05\x12\x14\n\x0c\x63\x61llback_url\x18\n \x01(\t\x12\x17\n\x0f\x63\x61llback_secret\x18\x0b \x01(\t\"x\n\x13StartCameraResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x14\n\x0csource_width\x18\x03 \x01(\x05\x12\x15\n\rsource_height\x18\x04 \x01(\x05\x12\x12\n\nsource_fps\x18\x05 \x01(\x02\"&\n\x11StopCameraRequest\x12\x11\n\tcamera_id\x18\x01 \x01(\t\"6\n\x12StopCameraResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x0f\n\rStatusRequest\"q\n\x0eStatusResponse\x12\x10\n\x08is_ready\x18\x01 \x01(\x08\x12\'\n\x07\x63\x61meras\x18\x02 \x03(\x0b\x32\x16.analysis.CameraStatus\x12$\n\x05stats\x18\x03 \x01(\x0b\x32\x15.analysis.GlobalStats\"t\n\x0c\x43\x61meraStatus\x12\x11\n\tcamera_id\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x18\n\x10\x66rames_processed\x18\x03 \x01(\x03\x12\x12\n\nlast_error\x18\x04 \x01(\t\x12\x13\n\x0bretry_count\x18\x05 \x01(\x05\"W\n\x0bGlobalStats\x12\x16\n\x0e\x61\x63tive_streams\x18\x01 \x01(\x05\x12\x18\n\x10total_detections\x18\x02 \x01(\x03\x12\x16\n\x0euptime_seconds\x18\x03 \x01(\x03\"\x14\n\x12HealthCheckRequest\"\x8e\x01\n\x13HealthCheckResponse\x12;\n\x06status\x18\x01 \x01(\x0e\x32+.analysis.HealthCheckResponse.ServingStatus\":\n\rServingStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0b\n\x07SERVING\x10\x01\x12\x0f\n\x0bNOT_SERVING\x10\x02\x32\xe6\x01\n\x0f\x41nalysisService\x12J\n\x0bStartCamera\x12\x1c.analysis.StartCameraRequest\x1a\x1d.analysis.StartCameraResponse\x12G\n\nStopCamera\x12\x1b.analysis.StopCameraRequest\x1a\x1c.analysis.StopCameraResponse\x12>\n\tGetStatus\x12\x17.analysis.StatusRequest\x1a\x18.analysis.StatusResponse2N\n\x06Health\x12\x44\n\x05\x43heck\x12\x1c.analysis.HealthCheckRequest\x1a\x1d.analysis.HealthCheckResponseB\nZ\x08./protosb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,29 +33,29 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z\010./protos'
   _globals['_STARTCAMERAREQUEST']._serialized_start=29
-  _globals['_STARTCAMERAREQUEST']._serialized_end=250
-  _globals['_STARTCAMERARESPONSE']._serialized_start=252
-  _globals['_STARTCAMERARESPONSE']._serialized_end=372
-  _globals['_STOPCAMERAREQUEST']._serialized_start=374
-  _globals['_STOPCAMERAREQUEST']._serialized_end=412
-  _globals['_STOPCAMERARESPONSE']._serialized_start=414
-  _globals['_STOPCAMERARESPONSE']._serialized_end=468
-  _globals['_STATUSREQUEST']._serialized_start=470
-  _globals['_STATUSREQUEST']._serialized_end=485
-  _globals['_STATUSRESPONSE']._serialized_start=487
-  _globals['_STATUSRESPONSE']._serialized_end=600
-  _globals['_CAMERASTATUS']._serialized_start=602
-  _globals['_CAMERASTATUS']._serialized_end=718
-  _globals['_GLOBALSTATS']._serialized_start=720
-  _globals['_GLOBALSTATS']._serialized_end=807
-  _globals['_HEALTHCHECKREQUEST']._serialized_start=809
-  _globals['_HEALTHCHECKREQUEST']._serialized_end=829
-  _globals['_HEALTHCHECKRESPONSE']._serialized_start=832
-  _globals['_HEALTHCHECKRESPONSE']._serialized_end=974
-  _globals['_HEALTHCHECKRESPONSE_SERVINGSTATUS']._serialized_start=916
-  _globals['_HEALTHCHECKRESPONSE_SERVINGSTATUS']._serialized_end=974
-  _globals['_ANALYSISSERVICE']._serialized_start=977
-  _globals['_ANALYSISSERVICE']._serialized_end=1207
-  _globals['_HEALTH']._serialized_start=1209
-  _globals['_HEALTH']._serialized_end=1287
+  _globals['_STARTCAMERAREQUEST']._serialized_end=263
+  _globals['_STARTCAMERARESPONSE']._serialized_start=265
+  _globals['_STARTCAMERARESPONSE']._serialized_end=385
+  _globals['_STOPCAMERAREQUEST']._serialized_start=387
+  _globals['_STOPCAMERAREQUEST']._serialized_end=425
+  _globals['_STOPCAMERARESPONSE']._serialized_start=427
+  _globals['_STOPCAMERARESPONSE']._serialized_end=481
+  _globals['_STATUSREQUEST']._serialized_start=483
+  _globals['_STATUSREQUEST']._serialized_end=498
+  _globals['_STATUSRESPONSE']._serialized_start=500
+  _globals['_STATUSRESPONSE']._serialized_end=613
+  _globals['_CAMERASTATUS']._serialized_start=615
+  _globals['_CAMERASTATUS']._serialized_end=731
+  _globals['_GLOBALSTATS']._serialized_start=733
+  _globals['_GLOBALSTATS']._serialized_end=820
+  _globals['_HEALTHCHECKREQUEST']._serialized_start=822
+  _globals['_HEALTHCHECKREQUEST']._serialized_end=842
+  _globals['_HEALTHCHECKRESPONSE']._serialized_start=845
+  _globals['_HEALTHCHECKRESPONSE']._serialized_end=987
+  _globals['_HEALTHCHECKRESPONSE_SERVINGSTATUS']._serialized_start=929
+  _globals['_HEALTHCHECKRESPONSE_SERVINGSTATUS']._serialized_end=987
+  _globals['_ANALYSISSERVICE']._serialized_start=990
+  _globals['_ANALYSISSERVICE']._serialized_end=1220
+  _globals['_HEALTH']._serialized_start=1222
+  _globals['_HEALTH']._serialized_end=1300
 # @@protoc_insertion_point(module_scope)

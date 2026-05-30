@@ -23,8 +23,9 @@ func DefaultConfig() Bootstrap {
 				},
 			},
 			AI: ServerAI{
-				Disabled:   false,
-				RetainDays: 7,
+				Disabled:         false,
+				RetainDays:       7,
+				AnalysisInterval: 5.0,
 			},
 			Recording: ServerRecording{
 				Disabled:           false,

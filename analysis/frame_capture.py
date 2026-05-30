@@ -63,12 +63,13 @@ class FrameCapture:
         self,
         rtsp_url: str,
         output_queue: queue.Queue,
-        detect_fps: int = 5,
+        detect_interval: float = 5.0,
         retry_limit: int = 10,
     ):
         self.rtsp_url = rtsp_url
         self.output_queue = output_queue
-        self.target_fps = detect_fps
+        # 将间隔秒数转为 ffmpeg 能接受的分数帧率字符串，如 2.0 -> "1/2"、0.5 -> "2/1"
+        self.target_fps_str = self._interval_to_fps_str(detect_interval)
         self.retry_limit = retry_limit
         self._stop_event = threading.Event()
         self._thread: Optional[threading.Thread] = None
@@ -83,6 +84,17 @@ class FrameCapture:
         self.error_count = 0
         self.last_error = ""
         self.is_failed = False
+
+    @staticmethod
+    def _interval_to_fps_str(interval: float) -> str:
+        """
+        把分析间隔（秒）转成 ffmpeg -r 接受的分数帧率字符串。
+        interval=2.0 → "1/2"，interval=0.5 → "2/1"，interval=0.1 → "10/1"。
+        使用整数分数避免浮点精度问题。
+        """
+        from fractions import Fraction
+        frac = Fraction(1 / interval).limit_denominator(1000)
+        return f"{frac.numerator}/{frac.denominator}"
 
     def start(self):
         if self._thread is not None and self._thread.is_alive():
@@ -176,7 +188,7 @@ class FrameCapture:
                 "-pix_fmt",
                 "bgr24",  # 直接输出 OpenCV 友好的 BGR 格式
                 "-r",
-                str(self.target_fps),  # 降低帧率
+                self.target_fps_str,  # 分析帧率（分数形式，如 1/2 表示每 2 秒 1 帧）
                 "pipe:1",
             ]
             slog.info(f"启动 ffmpeg 进程: {' '.join(ffmpeg_cmd[:-2])} ...")

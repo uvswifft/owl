@@ -94,7 +94,7 @@ class CameraTask:
         self.capture = FrameCapture(
             rtsp_url,
             self.frame_queue,
-            config.get("detect_fps", 5),
+            config.get("detect_interval_seconds", 5.0),
             config.get("retry_limit", 10),
         )
 
@@ -298,7 +298,7 @@ class AnalysisServiceServicer(analysis_pb2_grpc.AnalysisServiceServicer):
                     success=False, message="callback url is required"
                 )
             config = {
-                "detect_fps": request.detect_fps,
+                "detect_interval_seconds": request.detect_interval_seconds,
                 "labels": list(request.labels),
                 "threshold": request.threshold,
                 "roi_points": list(request.roi_points),

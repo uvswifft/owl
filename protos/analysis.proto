@@ -27,7 +27,7 @@ message StartCameraRequest {
   string rtsp_url = 3;            // RTSP 子码流地址 (必填)
 
   // === 检测配置 ===
-  int32 detect_fps = 4;           // 检测帧率，默认 5
+  float detect_interval_seconds = 4; // 分析间隔（秒），默认 2.0，支持小数（如 0.5 表示每秒 2 帧）
   repeated string labels = 5;     // 要检测的标签，如 ["person", "car"]，空则检测全部
   float threshold = 6;            // 置信度阈值，默认 0.5
 

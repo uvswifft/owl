@@ -266,17 +266,25 @@ func (a *AIWebhookAPI) StartAIDetection(ctx context.Context, ch *ipc.Channel, rt
 
 	roiPoints, labels := a.extractZoneConfig(ch)
 
+	// 三级回退：通道自定义 → 配置文件全局默认 → 内置兜底 5 秒
+	interval := ch.Ext.AnalysisInterval
+	if interval <= 0 {
+		interval = a.conf.Server.AI.AnalysisInterval
+	}
+	if interval <= 0 {
+		interval = 5.0
+	}
 	resp, err := a.ai.StartCamera(ctx, &protos.StartCameraRequest{
-		CameraId:       ch.ID,
-		CameraName:     ch.Name,
-		RtspUrl:        rtspURL,
-		DetectFps:      1,
-		Labels:         labels,
-		Threshold:      0.75,
-		RoiPoints:      roiPoints,
-		RetryLimit:     10,
-		CallbackUrl:    fmt.Sprintf("http://127.0.0.1:%d/ai", a.conf.Server.HTTP.Port),
-		CallbackSecret: "Basic 1234567890",
+		CameraId:              ch.ID,
+		CameraName:            ch.Name,
+		RtspUrl:               rtspURL,
+		DetectIntervalSeconds: interval,
+		Labels:                labels,
+		Threshold:             0.75,
+		RoiPoints:             roiPoints,
+		RetryLimit:            10,
+		CallbackUrl:           fmt.Sprintf("http://127.0.0.1:%d/ai", a.conf.Server.HTTP.Port),
+		CallbackSecret:        "Basic 1234567890",
 	})
 	if err != nil {
 		return nil, err

@@ -13,6 +13,13 @@
     Disabled = false
     # 保留天数
     RetainDays = 0
+    # 全局默认分析间隔（秒）
+    # 0   = 使用内置默认值（5 秒）
+    # 1   = 每秒 1 张
+    # 0.5 = 每秒 2 张
+    # 5   = 每 5 秒 1 张（推荐，CPU 占用低）
+    # 30  = 每 30 秒 1 张（超低频场景）
+    AnalysisInterval = 30
 
   # 对外提供的服务，建议由 nginx 代理
   [Server.HTTP]
@@ -22,8 +29,8 @@
     Timeout = '1m0s'
     # jwt 秘钥，空串时，每次启动程序将随机赋值
     JwtSecret = '6caOiETMs8SPWNHgEKA1Jhmn9wxpjAj9'
-    # 第三方认证服务地址
-    AuthURL = ""
+    # 第三方认证服务地址，空串则不启用，post 请求返回 200 表示认证通过，填写本服务 /health 表示免鉴权但不安全!
+    AuthURL = ''
 
     [Server.HTTP.PProf]
       # 是否启用 pprof, 建议设置为 true
@@ -40,7 +47,7 @@
     # 录像保留天数（超过则清理）
     RetainDays = 3
     # 磁盘使用率阈值（百分比），超过则触发循环覆盖
-    DiskUsageThreshold = 95.0
+    DiskUsageThreshold = 98.0
     # MP4 切片时长（秒）
     SegmentSeconds = 10
 
@@ -67,7 +74,7 @@
 
 [Sip]
   # 对设备宣告的本机地址(可选), 为空时按连接来源自动探测, 探测不可达时回退到 Media.SDPIP
-  Host = '192.168.1.241'
+  Host = '192.168.31.10'
   # 服务监听的 TCP/UDP 端口号
   Port = 15060
   # GB/T 28181 20 位国标 ID
@@ -85,8 +92,8 @@
   # 媒体服务器类型 zlm/lalmax
   Type = 'zlm'
   # 用于流媒体 webhook 回调
-  WebHookIP = '192.168.1.241'
+  WebHookIP = '192.168.31.10'
   # 媒体服务器 RTP 端口范围
   RTPPortRange = '20000-20100'
   # 媒体服务器 SDP IP
-  SDPIP = '192.168.1.241'
+  SDPIP = '192.168.31.10'

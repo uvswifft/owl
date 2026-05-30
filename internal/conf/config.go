@@ -40,6 +40,8 @@ type ServerRecording struct {
 type ServerAI struct {
 	Disabled   bool `comment:"是否禁用 ai 分析服务"`
 	RetainDays int  `comment:"保留天数"`
+	// 全局默认分析间隔（秒）。0=内置默认5秒；0.5=每秒2张；1=每秒1张；5=每5秒1张；30=每30秒1张
+	AnalysisInterval float32 `comment:"全局默认分析间隔（秒）"`
 }
 
 type ServerHTTP struct {
