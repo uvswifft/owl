@@ -20,6 +20,7 @@ import (
 	"github.com/gowvp/owl/internal/core/recording/adapter"
 	"github.com/gowvp/owl/internal/core/sms"
 	"github.com/gowvp/owl/internal/data"
+	"github.com/gowvp/owl/internal/push"
 	"github.com/gowvp/owl/pkg/gbs"
 	"github.com/ixugo/goddd/domain/uniqueid"
 	"github.com/ixugo/goddd/domain/uniqueid/store/uniqueiddb"
@@ -47,7 +48,7 @@ var (
 		NewConfigAPI,
 		NewUserAPI,
 		NewAIWebhookAPIWithDeps,
-		NewEventCore, NewEventAPI,
+		NewNotifier, NewEventCoreWithNotifier, NewEventAPI,
 		// Recording: Store -> SMSProvider(adapter) -> Core -> API
 		NewRecordingStore, NewSMSProviderAdapter, NewRecordingCore, NewRecordingAPI,
 		metadataapi.NewMetadataCore, metadataapi.NewMetadataAPI,
@@ -188,4 +189,23 @@ func NewAIWebhookAPIWithDeps(conf *conf.Bootstrap, eventCore event.Core, ipcBund
 // 通过接口解耦 recording 领域与 sms 领域，避免循环依赖
 func NewSMSProviderAdapter(smsCore sms.Core) recording.SMSProvider {
 	return adapter.NewSMSAdapter(smsCore)
+}
+
+// NewNotifier 创建 webhook 推送器，Targets 为空时返回 nil（不推送）
+func NewNotifier(conf *conf.Bootstrap) *push.Notifier {
+	cfg := conf.Server.Webhook
+	if len(cfg.Targets) == 0 {
+		return nil
+	}
+	return push.NewNotifier(cfg.Targets, cfg.MaxRetry, cfg.BufferSize)
+}
+
+// NewEventCoreWithNotifier 在 NewEventCore 基础上注入 webhook 推送器
+// notifier 为 nil 时，AddEventAndNotify 只入库不推送
+func NewEventCoreWithNotifier(conf *conf.Bootstrap, db *gorm.DB, notifier *push.Notifier) event.Core {
+	c := NewEventCore(db, conf)
+	if notifier != nil {
+		c.SetNotifier(notifier)
+	}
+	return c
 }

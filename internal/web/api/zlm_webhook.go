@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gowvp/owl/internal/conf"
+	"github.com/gowvp/owl/internal/core/event"
 	"github.com/gowvp/owl/internal/core/ipc"
 	"github.com/gowvp/owl/internal/core/recording"
 	"github.com/gowvp/owl/internal/core/sms"
@@ -22,6 +23,7 @@ type WebHookAPI struct {
 	smsCore       sms.Core
 	ipcCore       ipc.Core
 	recordingCore recording.Core
+	eventCore     event.Core
 	conf          *conf.Bootstrap
 	log           *slog.Logger
 	gbs           *gbs.Server
@@ -30,11 +32,12 @@ type WebHookAPI struct {
 	protocols map[string]ipc.Protocoler
 }
 
-func NewWebHookAPI(core sms.Core, conf *conf.Bootstrap, gbs *gbs.Server, ipcBundle IPCBundle, recordingCore recording.Core) WebHookAPI {
+func NewWebHookAPI(core sms.Core, conf *conf.Bootstrap, gbs *gbs.Server, ipcBundle IPCBundle, recordingCore recording.Core, eventCore event.Core) WebHookAPI {
 	return WebHookAPI{
 		smsCore:       core,
 		ipcCore:       ipcBundle.Core,
 		recordingCore: recordingCore,
+		eventCore:     eventCore,
 		conf:          conf,
 		log:           slog.With("hook", "zlm"),
 		gbs:           gbs,
@@ -54,6 +57,8 @@ func registerZLMWebhookAPI(r gin.IRouter, api WebHookAPI, handler ...gin.Handler
 		group.POST("/on_rtp_server_timeout", web.WrapH(api.onRTPServerTimeout))
 		group.POST("/on_stream_not_found", web.WrapH(api.onStreamNotFound))
 		group.POST("/on_record_mp4", web.WrapH(api.onRecordMP4))
+		// 统一事件接收入口：兼容 Python AI 推送和 gowvp 间转发
+		group.POST("/events", api.onWebhookEvents)
 	}
 }
 

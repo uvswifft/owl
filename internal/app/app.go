@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gowvp/owl/internal/conf"
 	"github.com/ixugo/goddd/pkg/logger"
 	"github.com/ixugo/goddd/pkg/server"
@@ -31,6 +32,17 @@ func Run(bc *conf.Bootstrap) {
 	}
 	if bc.Server.Recording.StorageDir == "" {
 		bc.Server.Recording.StorageDir = "./configs/recordings"
+	}
+
+	// 每次启动生成进程内随机 UUID，用于 Python AI 回调鉴权
+	bc.AISecret = uuid.New().String()
+
+	// RecvSecret 为空时（旧配置文件升级场景）自动生成并持久化
+	if bc.Server.Webhook.RecvSecret == "" {
+		bc.Server.Webhook.RecvSecret = uuid.New().String()
+		if err := conf.WriteConfig(&bc, bc.ConfigPath); err != nil {
+			system.ErrPrintf("WriteConfig RecvSecret err[%s]", err)
+		}
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

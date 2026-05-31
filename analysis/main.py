@@ -472,8 +472,9 @@ class AnalysisServiceServicer(analysis_pb2_grpc.AnalysisServiceServicer):
 def send_callback(config: dict, path: str, payload: dict):
     """
     发送回调到指定路径，路径会拼接到 callback_url 后面。
-    例如: callback_url=http://127.0.0.1:15123, path=/events
-    最终请求: POST http://127.0.0.1:15123/events
+    例如: callback_url=http://127.0.0.1:15123/webhook, path=/events
+    最终请求: POST http://127.0.0.1:15123/webhook/events
+    secret 通过 Secret header 传递，不出现在 URL 中
     """
     url = config.get("callback_url", "")
     secret = config.get("callback_secret", "")
@@ -483,7 +484,7 @@ def send_callback(config: dict, path: str, payload: dict):
     full_url = url.rstrip("/") + path
     headers = {"Content-Type": "application/json"}
     if secret:
-        headers["Authorization"] = secret
+        headers["Secret"] = secret
 
     try:
         threading.Thread(
@@ -512,7 +513,7 @@ def send_started_callback():
     full_url = url.rstrip("/") + "/started"
     headers = {"Content-Type": "application/json"}
     if secret:
-        headers["Authorization"] = secret
+        headers["Secret"] = secret
 
     payload = {
         "timestamp": int(time.time() * 1000),
@@ -556,7 +557,7 @@ def send_keepalive_callback(stats: dict):
     full_url = url.rstrip("/") + "/keepalive"
     headers = {"Content-Type": "application/json"}
     if secret:
-        headers["Authorization"] = secret
+        headers["Secret"] = secret
 
     payload = {
         "timestamp": int(time.time() * 1000),

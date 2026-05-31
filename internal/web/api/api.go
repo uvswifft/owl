@@ -119,8 +119,8 @@ func setupRouter(r *gin.Engine, uc *Usecase) {
 	// 反向代理流媒体数据
 	r.Any("/proxy/sms/*path", uc.proxySMS)
 
-	// 注册 AI 分析服务回调接口
-	registerAIWebhookAPI(r, uc.AIWebhookAPI)
+	// 注册 AI 分析服务回调接口，/ai/events 是 /webhook/events 的别名
+	registerAIWebhookAPI(r, uc.AIWebhookAPI, uc.WebHookAPI)
 	// 启动 AI 任务同步协程，每 5 分钟检测一次数据库与内存状态差异
 	uc.AIWebhookAPI.StartAISyncLoop(context.Background(), uc.SMSAPI.smsCore)
 	RegisterEvent(r, uc.EventAPI, auth)

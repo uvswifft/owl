@@ -19,14 +19,14 @@
     # 0.5 = 每秒 2 张
     # 5   = 每 5 秒 1 张（推荐，CPU 占用低）
     # 30  = 每 30 秒 1 张（超低频场景）
-    AnalysisInterval = 0.2
+    AnalysisInterval = 5
     # 告警冷却时间（秒）：同一目标在此时间窗口内不重复触发告警
     # 判定规则：标签相同 + 检测框与上次告警框 IoU > 0.3，视为同一目标
     # 0  = 使用内置默认值（30 秒）
     # 10 = 10 秒内不重复告警（适合快速移动场景）
     # 30 = 30 秒内不重复告警（推荐）
     # 60 = 1 分钟内不重复告警（适合目标长时间驻留场景）
-    AlertCooldownSeconds = 1
+    AlertCooldownSeconds = 10
 
   # 对外提供的服务，建议由 nginx 代理
   [Server.HTTP]
@@ -57,6 +57,17 @@
     DiskUsageThreshold = 98.0
     # MP4 切片时长（秒）
     SegmentSeconds = 10
+
+  [Server.Webhook]
+    # 推送目标 URL 数组，secret 内嵌于 URL query 参数（如 http://host/webhook/events?secret=xxx）
+    # 发送时 secret 会从 URL 中提取并放入 Authorization header，URL 本身不携带 secret
+    Targets = []
+    # 最大重试次数，0 = 内置默认 3 次
+    MaxRetry = 3
+    # 每个目标的 channel 缓冲队列大小，0 = 内置默认 64，满队列时新事件被丢弃并记录警告
+    BufferSize = 64
+    # 本节点接收 webhook 事件时校验的密钥，首次启动自动生成并持久化，勿置空
+    RecvSecret = ''
 
 [Data]
   # 数据库支持 sqlite/postgres/mysql, 使用 sqlite 时 dsn 应当填写文件存储路径

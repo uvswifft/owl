@@ -3,6 +3,7 @@ package conf
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ixugo/goddd/pkg/orm"
 )
 
@@ -21,6 +22,9 @@ func DefaultConfig() Bootstrap {
 					Enabled:   true,
 					AccessIps: []string{"::1", "127.0.0.1"},
 				},
+			},
+			Webhook: ServerWebhook{
+				RecvSecret: uuid.New().String(),
 			},
 			AI: ServerAI{
 				Disabled:             false,

@@ -302,6 +302,90 @@ Authentication uses `Server.Username` / `Server.Password` in `configs/config.tom
 
 **Not the same as** `GET /onvif/discover`: that API lets GoWVP **scan the LAN for external ONVIF cameras** (client role).
 
+## Webhook Alert Push & Receive
+
+GoWVP supports pushing alert events to external systems via HTTP Webhook, and receiving pushes from other GoWVP instances for **master-slave cascading** deployments.
+
+### Endpoint
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/webhook/events` | Unified event receiver, compatible with both Python AI and gowvp-to-gowvp forwarding |
+
+### Configuration (`configs/config.toml`)
+
+```toml
+[Server.Webhook]
+  # Target URL array; embed the secret as a query parameter
+  Targets = [
+    "http://192.168.1.100:15123/webhook/events?secret=your-recv-secret",
+  ]
+  # Max retries, 0 = built-in default of 3
+  MaxRetry = 3
+  # Channel buffer size per target, 0 = built-in default of 64
+  BufferSize = 64
+  # Secret for validating incoming webhook requests (auto-generated on first launch)
+  RecvSecret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+### Authentication
+
+`/webhook/events` accepts two authentication methods (either one suffices):
+
+| Source | Method | Notes |
+|--------|--------|-------|
+| Python AI | `Authorization: Basic <InternalSecret>` header | Random UUID generated at startup, not persisted |
+| Other gowvp | URL query `?secret=<RecvSecret>` | Configured in `RecvSecret`, auto-generated on first launch |
+
+### Master-Slave Cascading
+
+**Master node**: Receives AI detection events and pushes alerts to slave nodes.
+
+```toml
+# Master node config.toml
+[Server.Webhook]
+  Targets = ["http://<slave-ip>:15123/webhook/events?secret=<slave-RecvSecret>"]
+```
+
+**Slave node**: Receives pushes and stores events directly (device/channel existence is not validated).
+
+```toml
+# Slave node config.toml (RecvSecret is auto-generated on first launch)
+[Server.Webhook]
+  RecvSecret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+### Forward Payload Format (gowvp → gowvp)
+
+```json
+{
+  "did": "device-id",
+  "cid": "channel-id",
+  "started_at": "2024-01-01T10:00:00Z",
+  "ended_at": "2024-01-01T10:00:01Z",
+  "label": "person",
+  "score": 0.95,
+  "zones": "{\"x_min\":0,\"y_min\":0,\"x_max\":100,\"y_max\":100}",
+  "image_base64": "<base64-encoded JPEG image>",
+  "model": "yolov8"
+}
+```
+
+> `image_base64`: The master node reads the local image file and encodes it as base64 for transmission. The slave node decodes and saves it locally, resolving cross-node file path issues.
+> If the image cannot be read, `image_base64` is omitted; the event is still saved without an image.
+
+### Retry Strategy
+
+On failure, the push is retried with **exponential backoff ± 25% jitter**:
+
+| Attempt | Base Delay |
+|---------|------------|
+| 1st | ~1s |
+| 2nd | ~2s |
+| 3rd | ~4s (max 10s) |
+
+HTTP 4xx responses (except 429/408) are treated as permanent failures and not retried. Each retry failure is logged as `warn`; exhausted retries are logged as `error`.
+
 ## Acknowledgments
 
 Thanks to our sponsors (in no particular order):

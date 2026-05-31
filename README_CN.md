@@ -358,6 +358,63 @@ ONVIF SOAP 路径（与 Web 共用 HTTP 端口）：
 
 **说明：** `GET /onvif/discover` 是 GoWVP **扫描局域网内其它 ONVIF 摄像机**（客户端能力），与上述服务端组播发现不是同一功能。
 
+## Webhook 告警事件推送与接收
+
+GoWVP 支持将告警事件通过 HTTP Webhook 推送到外部系统，也支持接收来自其他 GoWVP 实例的告警推送，实现**主从级联**部署。
+
+### 路由
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `POST` | `/webhook/events` | 统一事件接收入口，兼容 Python AI 和 gowvp 间转发两种来源 |
+
+### 配置（`configs/config.toml`）
+
+```toml
+[Server.Webhook]
+  # 推送目标 URL 数组，secret 直接内嵌于 URL query 参数
+  Targets = [
+    "http://192.168.1.100:15123/webhook/events?secret=your-recv-secret",
+  ]
+  # 最大重试次数，0 = 使用内置默认值 3
+  MaxRetry = 3
+  # 每个目标的 channel 缓冲队列大小，0 = 内置默认 64
+  BufferSize = 64
+  # 本节点接收 webhook 时校验的密钥（首次启动自动生成并持久化）
+  RecvSecret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+### 推送 payload 格式（gowvp → gowvp）
+
+```json
+{
+  "did": "device-id",
+  "cid": "channel-id",
+  "started_at": "2024-01-01T10:00:00Z",
+  "ended_at": "2024-01-01T10:00:01Z",
+  "label": "person",
+  "score": 0.95,
+  "zones": "{\"x_min\":0,\"y_min\":0,\"x_max\":100,\"y_max\":100}",
+  "image_base64": "<base64 编码的 JPEG 图片>",
+  "model": "yolov8"
+}
+```
+
+> `image_base64`：主节点读取本地图片后 base64 编码随 payload 发送，副节点解码后落盘存储，解决跨节点文件路径失效问题。
+> 若图片读取失败，`image_base64` 字段为空，副节点不存图片但事件数据仍会入库。
+
+### 重试策略
+
+推送失败时自动重试，采用**指数退避 + ±25% jitter**：
+
+| 重试次 | 基础延迟 |
+|--------|----------|
+| 第 1 次 | ~1s |
+| 第 2 次 | ~2s |
+| 第 3 次 | ~4s（上限 10s）|
+
+HTTP 4xx（除 429/408）视为永久失败，不再重试。每次重试失败记录 warn 日志，耗尽重试次数记录 error 日志。
+
 ## 感谢
 
 感谢赞助，排名不分先后。
