@@ -11,7 +11,7 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/gowvp/onvif v0.0.15
 	github.com/grafov/m3u8 v0.12.1
-	github.com/ixugo/goddd v1.5.9
+	github.com/ixugo/goddd v1.7.0
 	github.com/ixugo/netpulse v0.1.3
 	github.com/jinzhu/copier v0.4.0
 	github.com/pelletier/go-toml/v2 v2.3.0

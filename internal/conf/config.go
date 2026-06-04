@@ -93,11 +93,13 @@ type Database struct {
 
 // Log 结构体，包含 Dir、Level、MaxAge、RotationTime 和 RotationSize 五个字段
 type Log struct {
-	Dir          string   `comment:"日志存储目录，不能使用特殊符号"`
-	Level        string   `comment:"记录级别 debug/info/warn/error"`
-	MaxAge       Duration `comment:"保留日志多久，超过时间自动删除"`
+	Dir     string   `comment:"日志存储目录，不能使用特殊符号"`
+	Level   string   `comment:"记录级别 debug/info/warn/error"`
+	MaxAge  Duration `comment:"弃用，请使用 MaxDays 替代"`
+	MaxDays int      `comment:"保留日志天数，超过时间自动删除"`
+	MaxSize int      `comment:"日志文件最大大小(MB)"`
+
 	RotationTime Duration `comment:"多久时间，分割一个新的日志文件"`
-	RotationSize int64    `comment:"多大文件，分割一个新的日志文件(MB)"`
 }
 
 type SIP struct {

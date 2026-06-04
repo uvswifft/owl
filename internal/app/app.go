@@ -97,12 +97,14 @@ func SetupLog(bc *conf.Bootstrap) (*slog.Logger, func()) {
 	logDir := filepath.Join(bc.ConfigDir, bc.Log.Dir)
 	_ = os.MkdirAll(logDir, 0o755)
 	return logger.SetupSlog(logger.Config{
-		Dir:          logDir,                            // 日志地址
-		Debug:        bc.Debug,                          // 服务级别Debug/Release
-		MaxAge:       bc.Log.MaxAge.Duration(),          // 日志存储时间
-		RotationTime: bc.Log.RotationTime.Duration(),    // 循环时间
-		RotationSize: bc.Log.RotationSize * 1024 * 1024, // 循环大小
-		Level:        bc.Log.Level,                      // 日志级别
+		FileConfig: logger.FileConfig{
+			Dir:          logDir,
+			MaxAge:       bc.Log.MaxDays,
+			RotationTime: bc.Log.RotationTime.Duration(),
+			MaxSize:      bc.Log.MaxSize,
+		},
+		Debug: bc.Debug,     // 服务级别Debug/Release
+		Level: bc.Log.Level, // 日志级别
 	})
 }
 
