@@ -47,6 +47,8 @@ Two streaming media servers are supported:
 
 Project framework based on @ixugo's [goddd](https://github.com/ixugo/goddd)
 
+For commercial licensing, please contact WeChat: **golangxx**. Unauthorized modifications must open-source both frontend and backend source code under the GPL license.
+
 ## FAQ
 
 > Where are the frontend resources? How to load the web interface?

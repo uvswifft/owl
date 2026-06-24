@@ -55,6 +55,8 @@
 
 项目框架基于 @ixugo [goddd](https://github.com/ixugo/goddd)
 
+商用授权请联系微信 **golangxx**，申请备注 "owl"，非授权改动请按照 GPL 协议开源前后端源代码。
+
 ## QA
 
 > 怎么没有前端资源? 如何加载网页呢?
