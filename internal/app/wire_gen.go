@@ -7,14 +7,15 @@
 package app
 
 import (
+	"log/slog"
+	"net/http"
+
 	"github.com/gowvp/owl/internal/conf"
 	"github.com/gowvp/owl/internal/core/metadata/metadataapi"
 	"github.com/gowvp/owl/internal/data"
 	"github.com/gowvp/owl/internal/web/api"
 	"github.com/gowvp/owl/pkg/gbs"
 	"github.com/ixugo/goddd/domain/version/versionapi"
-	"log/slog"
-	"net/http"
 )
 
 // Injectors from wire.go:
@@ -35,7 +36,9 @@ func wireApp(bc *conf.Bootstrap, log *slog.Logger) (http.Handler, func(), error)
 	ipcBundle := api.NewIPCCoreWithProtocols(storer, uniqueidCore, adapter, smsCore, server, bc)
 	recordingStorer := api.NewRecordingStore(db)
 	smsProvider := api.NewSMSProviderAdapter(smsCore)
-	recordingCore := api.NewRecordingCore(recordingStorer, bc, smsProvider)
+	ipcProvider := api.NewIPCProviderAdapter(ipcBundle)
+	playProvider := api.NewPlayProviderAdapter(smsCore)
+	recordingCore := api.NewRecordingCore(recordingStorer, bc, smsProvider, ipcProvider, playProvider)
 	notifier := api.NewNotifier(bc)
 	eventCore := api.NewEventCoreWithNotifier(bc, db, notifier)
 	webHookAPI := api.NewWebHookAPI(smsCore, bc, server, ipcBundle, recordingCore, eventCore)

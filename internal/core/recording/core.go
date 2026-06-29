@@ -1,7 +1,9 @@
 package recording
 
 import (
+	"context"
 	"strings"
+	"time"
 
 	"github.com/gowvp/owl/internal/conf"
 )
@@ -15,13 +17,40 @@ type Storer interface {
 type SMSProvider interface {
 	StartRecord(app, stream, customPath string, maxSecond int) error
 	StopRecord(app, stream string) error
+	// ListRecordingStreams 批量获取所有在线流的录制状态
+	// 返回 map[app/stream]bool，true 表示正在录制 MP4
+	ListRecordingStreams() (map[string]bool, error)
+}
+
+// IPCProvider 通道信息提供者，解耦录制域与 ipc 域
+// 用于定时同步时查询所有在线通道
+type IPCProvider interface {
+	ListOnlineChannels(ctx context.Context) ([]ChannelInfo, error)
+}
+
+// ChannelInfo 同步任务使用的通道信息摘要
+type ChannelInfo struct {
+	ID         string // 通道唯一 ID
+	App        string // 应用名（如 rtp / live）
+	Stream     string // 流 ID
+	Type       string // 通道类型（gb28181 / onvif / rtmp / rtsp）
+	RecordMode string // 录像模式（always / ai / none / 空串=always）
+}
+
+// PlayProvider 主动拉流能力，解耦录制域与播放域
+// 仅用于"应录制但流不存在"时触发拉流
+type PlayProvider interface {
+	TriggerStream(ctx context.Context, info ChannelInfo) error
 }
 
 // Core business domain
 type Core struct {
-	store       Storer
-	conf        *conf.ServerRecording
-	smsProvider SMSProvider
+	store        Storer
+	conf         *conf.ServerRecording
+	smsProvider  SMSProvider
+	ipcProvider  IPCProvider
+	playProvider PlayProvider
+	syncInterval time.Duration // 0 表示使用默认值 syncDefaultInterval
 }
 
 type Option func(*Core)
@@ -37,6 +66,27 @@ func WithSMSProvider(provider SMSProvider) Option {
 func WithConfig(conf *conf.ServerRecording) Option {
 	return func(c *Core) {
 		c.conf = conf
+	}
+}
+
+// WithIPCProvider 注入通道信息提供者，用于定时同步时查询应录制的通道
+func WithIPCProvider(provider IPCProvider) Option {
+	return func(c *Core) {
+		c.ipcProvider = provider
+	}
+}
+
+// WithPlayProvider 注入拉流能力，用于流不存在时主动触发拉流
+func WithPlayProvider(provider PlayProvider) Option {
+	return func(c *Core) {
+		c.playProvider = provider
+	}
+}
+
+// WithSyncInterval 设置同步周期，用于测试时缩短等待时间
+func WithSyncInterval(d time.Duration) Option {
+	return func(c *Core) {
+		c.syncInterval = d
 	}
 }
 

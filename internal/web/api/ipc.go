@@ -104,9 +104,10 @@ type addZoneWithIDInput struct {
 }
 
 // setRecordModeWithIDInput 设置录像模式的请求参数（路径 ID + 请求体）
+// Mode 不能带 binding tag，否则 ShouldBindUri 阶段就会校验失败（URI 中无 mode 字段）
 type setRecordModeWithIDInput struct {
-	ID string `uri:"id" binding:"required"`
-	setRecordModeInput
+	ID   string `uri:"id" binding:"required"`
+	Mode string `json:"mode" binding:"omitempty,oneof=always ai none"`
 }
 
 // ptzControlWithIDInput 云台控制的请求参数（路径 ID + 请求体）
@@ -844,17 +845,17 @@ func (a IPCAPI) buildRTSPURL(ctx context.Context, channelID string) (string, err
 	return fmt.Sprintf("rtsp://%s:%d/%s/%s", "127.0.0.1", svr.Ports.RTSP, app, stream), nil
 }
 
-// setRecordModeInput 设置录像模式请求参数
-type setRecordModeInput struct {
-	// 录像模式：always-一直录制，ai-按AI触发录制，none-不录制
-	Mode string `json:"mode" binding:"required,oneof=always ai none"`
-}
-
 // setRecordMode 设置通道的录像模式，支持三种模式：always(一直录制)、ai(AI触发录制)、none(不录制)
 // always 和 ai 都会启用录制
 func (a IPCAPI) setRecordMode(c *gin.Context, in *setRecordModeWithIDInput) (gin.H, error) {
 	channelID := in.ID
 	ctx := c.Request.Context()
+
+	switch in.Mode {
+	case "always", "ai", "none":
+	default:
+		return nil, reason.ErrBadRequest.SetMsg("mode must be one of: always, ai, none")
+	}
 
 	// 更新通道的录像模式
 	channel, err := a.ipc.SetRecordMode(ctx, channelID, in.Mode)

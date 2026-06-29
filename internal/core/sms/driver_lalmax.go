@@ -188,3 +188,8 @@ func (l *LalmaxDriver) StartRecord(ctx context.Context, ms *MediaServer, req *zl
 func (l *LalmaxDriver) StopRecord(ctx context.Context, ms *MediaServer, req *zlm.StopRecordRequest) (*zlm.StopRecordResponse, error) {
 	return nil, fmt.Errorf("lalmax 暂不支持录制功能")
 }
+
+// GetMediaList lalmax 暂不支持流列表查询
+func (l *LalmaxDriver) GetMediaList(ctx context.Context, ms *MediaServer) (*zlm.GetMediaListResponse, error) {
+	return &zlm.GetMediaListResponse{}, nil
+}

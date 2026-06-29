@@ -51,3 +51,27 @@ func (a *SMSAdapter) StopRecord(app, stream string) error {
 	})
 	return err
 }
+
+// ListRecordingStreams 批量获取所有在线流的录制状态
+// 调用 ZLM getMediaList 一次获取全部流，提取 isRecordingMP4 状态
+// 返回 map key 格式为 "app/stream"
+func (a *SMSAdapter) ListRecordingStreams() (map[string]bool, error) {
+	ms, err := a.smsCore.GetDefaultMediaServer()
+	if err != nil {
+		return nil, err
+	}
+	resp, err := a.smsCore.GetMediaList(ms)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]bool, len(resp.Data))
+	for _, item := range resp.Data {
+		key := item.App + "/" + item.Stream
+		if item.IsRecordingMP4 {
+			result[key] = true
+		} else if _, exists := result[key]; !exists {
+			result[key] = false
+		}
+	}
+	return result, nil
+}

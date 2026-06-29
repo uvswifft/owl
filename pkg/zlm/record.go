@@ -1,8 +1,9 @@
 package zlm
 
 const (
-	startRecordPath = "/index/api/startRecord"
-	stopRecordPath  = "/index/api/stopRecord"
+	startRecordPath  = "/index/api/startRecord"
+	stopRecordPath   = "/index/api/stopRecord"
+	getMediaListPath = "/index/api/getMediaList"
 )
 
 // StartRecordRequest 开始录制请求参数
@@ -71,6 +72,38 @@ func (e *Engine) StopRecord(req StopRecordRequest) (*StopRecordResponse, error) 
 
 	var resp StopRecordResponse
 	if err := e.post(stopRecordPath, data, &resp); err != nil {
+		return nil, err
+	}
+	if err := e.ErrHandle(resp.Code, resp.Msg); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// MediaItem getMediaList 返回的单条流信息
+type MediaItem struct {
+	App            string `json:"app"`
+	Stream         string `json:"stream"`
+	Schema         string `json:"schema"`
+	Vhost          string `json:"vhost"`
+	IsRecordingMP4 bool   `json:"isRecordingMP4"`
+	IsRecordingHLS bool   `json:"isRecordingHLS"`
+	OriginType     int    `json:"originType"`
+	ReaderCount    int    `json:"readerCount"`
+	AliveSecond    int    `json:"aliveSecond"`
+}
+
+// GetMediaListResponse getMediaList 响应
+type GetMediaListResponse struct {
+	FixedHeader
+	Data []MediaItem `json:"data"`
+}
+
+// GetMediaList 批量获取所有在线流列表（含录制状态）
+// 一次请求获取全部流的 isRecordingMP4 状态，避免逐流查询
+func (e *Engine) GetMediaList() (*GetMediaListResponse, error) {
+	var resp GetMediaListResponse
+	if err := e.post(getMediaListPath, nil, &resp); err != nil {
 		return nil, err
 	}
 	if err := e.ErrHandle(resp.Code, resp.Msg); err != nil {

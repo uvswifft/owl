@@ -54,7 +54,7 @@ func (e *DeviceExt) GetRecordMode() string {
 }
 
 func (e *DeviceExt) IsAlwaysRecord() bool {
-	return e.RecordMode == "always"
+	return e.RecordMode == "always" || e.RecordMode == ""
 }
 
 func (e *DeviceExt) IsAIRecord() bool {
@@ -62,7 +62,7 @@ func (e *DeviceExt) IsAIRecord() bool {
 }
 
 func (e *DeviceExt) IsNoneRecord() bool {
-	return e.RecordMode == "none" || e.RecordMode == ""
+	return e.RecordMode == "none"
 }
 
 // Scan implements orm.Scaner.

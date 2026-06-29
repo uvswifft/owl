@@ -37,4 +37,5 @@ type Driver interface {
 	// Recording Operations
 	StartRecord(ctx context.Context, ms *MediaServer, req *zlm.StartRecordRequest) (*zlm.StartRecordResponse, error)
 	StopRecord(ctx context.Context, ms *MediaServer, req *zlm.StopRecordRequest) (*zlm.StopRecordResponse, error)
+	GetMediaList(ctx context.Context, ms *MediaServer) (*zlm.GetMediaListResponse, error)
 }

@@ -49,8 +49,9 @@ var (
 		NewUserAPI,
 		NewAIWebhookAPIWithDeps,
 		NewNotifier, NewEventCoreWithNotifier, NewEventAPI,
-		// Recording: Store -> SMSProvider(adapter) -> Core -> API
-		NewRecordingStore, NewSMSProviderAdapter, NewRecordingCore, NewRecordingAPI,
+		// Recording: Store -> SMSProvider(adapter) -> IPCProvider(adapter) -> PlayProvider(adapter) -> Core -> API
+		NewRecordingStore, NewSMSProviderAdapter, NewIPCProviderAdapter, NewPlayProviderAdapter,
+		NewRecordingCore, NewRecordingAPI,
 		metadataapi.NewMetadataCore, metadataapi.NewMetadataAPI,
 	)
 )
@@ -189,6 +190,18 @@ func NewAIWebhookAPIWithDeps(conf *conf.Bootstrap, eventCore event.Core, ipcBund
 // 通过接口解耦 recording 领域与 sms 领域，避免循环依赖
 func NewSMSProviderAdapter(smsCore sms.Core) recording.SMSProvider {
 	return adapter.NewSMSAdapter(smsCore)
+}
+
+// NewIPCProviderAdapter 创建 IPC 适配器，将 ipc.Core 适配为 recording.IPCProvider
+// 用于录制同步时查询应录制的在线通道
+func NewIPCProviderAdapter(ipcBundle IPCBundle) recording.IPCProvider {
+	return adapter.NewIPCAdapter(ipcBundle.Core)
+}
+
+// NewPlayProviderAdapter 创建 Play 适配器，桥接拉流能力给录制同步使用
+// 通过 ZLM getSnap 取最新快照触发拉流，所有协议通用
+func NewPlayProviderAdapter(smsCore sms.Core) recording.PlayProvider {
+	return adapter.NewPlayAdapter(smsCore)
 }
 
 // NewNotifier 创建 webhook 推送器，Targets 为空时返回 nil（不推送）

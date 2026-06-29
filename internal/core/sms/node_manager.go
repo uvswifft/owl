@@ -322,3 +322,12 @@ func (n *NodeManager) StopRecord(server *MediaServer, in zlm.StopRecordRequest) 
 	}
 	return driver.StopRecord(context.Background(), server, &in)
 }
+
+// GetMediaList 批量获取所有在线流列表（含录制状态）
+func (n *NodeManager) GetMediaList(server *MediaServer) (*zlm.GetMediaListResponse, error) {
+	driver, err := n.getDriver(server.Type)
+	if err != nil {
+		return nil, err
+	}
+	return driver.GetMediaList(context.Background(), server)
+}

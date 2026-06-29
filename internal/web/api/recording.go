@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -32,14 +33,25 @@ func NewRecordingStore(db *gorm.DB) recording.Storer {
 
 // NewRecordingCore 创建录像管理核心服务
 // 依赖 recording.SMSProvider 接口而非 sms.Core，避免循环依赖
-func NewRecordingCore(store recording.Storer, cfg *conf.Bootstrap, provider recording.SMSProvider) recording.Core {
+func NewRecordingCore(
+	store recording.Storer,
+	cfg *conf.Bootstrap,
+	provider recording.SMSProvider,
+	ipcProvider recording.IPCProvider,
+	playProvider recording.PlayProvider,
+) recording.Core {
 	core := recording.NewCore(store,
 		recording.WithConfig(&cfg.Server.Recording),
 		recording.WithSMSProvider(provider),
+		recording.WithIPCProvider(ipcProvider),
+		recording.WithPlayProvider(playProvider),
 	)
 
 	// 启动清理协程
 	go core.StartCleanupWorker()
+
+	// 启动录制同步协程（平台重启/流中断恢复）
+	core.StartRecordingSyncLoop(context.Background())
 
 	return core
 }
