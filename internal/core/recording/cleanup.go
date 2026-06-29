@@ -164,6 +164,17 @@ func (c Core) cleanupByDiskUsage() bool {
 		var batchFailed int
 		var fileNames []string
 
+		// 收集本批待删除的录像明细
+		type diskDeleteDetail struct {
+			ID        int64  `json:"id"`
+			CID       string `json:"cid"`
+			Path      string `json:"path"`
+			StartedAt string `json:"started_at"`
+			Size      int64  `json:"size"`
+			Status    string `json:"status"`
+		}
+		var details []diskDeleteDetail
+
 		for _, rec := range oldestRecordings {
 			filePath := rec.Path
 			if !filepath.IsAbs(filePath) {
@@ -171,29 +182,30 @@ func (c Core) cleanupByDiskUsage() bool {
 			}
 			if err := os.Remove(filePath); err != nil {
 				if os.IsNotExist(err) {
-					// 文件已不存在，数据库记录也要清理
 					deleteIDs = append(deleteIDs, rec.ID)
 					fileNames = append(fileNames, filepath.Base(filePath))
+					details = append(details, diskDeleteDetail{rec.ID, rec.CID, filePath, rec.StartedAt.Format(time.DateTime), rec.Size, "not_exist"})
 				} else {
-					// 文件删不掉（权限/被占用），保留数据库记录下次重试
 					batchFailed++
+					details = append(details, diskDeleteDetail{rec.ID, rec.CID, filePath, rec.StartedAt.Format(time.DateTime), rec.Size, "failed"})
 					slog.Warn("文件删除失败，跳过", "path", filePath, "err", err)
 				}
 			} else {
 				batchFreed += rec.Size
 				deleteIDs = append(deleteIDs, rec.ID)
 				fileNames = append(fileNames, filepath.Base(filePath))
+				details = append(details, diskDeleteDetail{rec.ID, rec.CID, filePath, rec.StartedAt.Format(time.DateTime), rec.Size, "deleted"})
 			}
 		}
 
-		// 每批删除结果用 info 日志记录，便于排查删除故障
+		// 一条日志汇总本批所有删除明细
 		slog.Info("磁盘清理批次",
 			"batch", batch+1,
 			"total", len(oldestRecordings),
 			"to_delete", len(deleteIDs),
 			"failed", batchFailed,
 			"freed_bytes", batchFreed,
-			"files", fileNames,
+			"details", details,
 		)
 
 		// 批量删除数据库记录
@@ -298,6 +310,17 @@ func (c Core) batchDeleteRecordings(ctx context.Context, reason string, conditio
 		var batchFilesDeleted, batchFailed int
 		var fileNames []string
 
+		// 收集本批待删除的录像明细，用于一条日志汇总
+		type deleteDetail struct {
+			ID        int64  `json:"id"`
+			CID       string `json:"cid"`
+			Path      string `json:"path"`
+			StartedAt string `json:"started_at"`
+			Size      int64  `json:"size"`
+			Status    string `json:"status"` // deleted / not_exist / failed
+		}
+		var details []deleteDetail
+
 		for _, rec := range recordings {
 			filePath := rec.Path
 			if !filepath.IsAbs(filePath) {
@@ -305,12 +328,12 @@ func (c Core) batchDeleteRecordings(ctx context.Context, reason string, conditio
 			}
 			if err := os.Remove(filePath); err != nil {
 				if os.IsNotExist(err) {
-					// 文件已不存在，数据库记录也要清理
 					deleteIDs = append(deleteIDs, rec.ID)
 					fileNames = append(fileNames, filepath.Base(filePath))
+					details = append(details, deleteDetail{rec.ID, rec.CID, filePath, rec.StartedAt.Format(time.DateTime), rec.Size, "not_exist"})
 				} else {
-					// 文件删不掉，保留数据库记录下次重试
 					batchFailed++
+					details = append(details, deleteDetail{rec.ID, rec.CID, filePath, rec.StartedAt.Format(time.DateTime), rec.Size, "failed"})
 					slog.Warn("文件删除失败，跳过", "path", filePath, "err", err)
 				}
 			} else {
@@ -318,17 +341,18 @@ func (c Core) batchDeleteRecordings(ctx context.Context, reason string, conditio
 				batchFreed += rec.Size
 				deleteIDs = append(deleteIDs, rec.ID)
 				fileNames = append(fileNames, filepath.Base(filePath))
+				details = append(details, deleteDetail{rec.ID, rec.CID, filePath, rec.StartedAt.Format(time.DateTime), rec.Size, "deleted"})
 			}
 		}
 
-		// 每批删除结果用 info 日志记录，便于排查删除故障
+		// 一条日志汇总本批所有删除明细
 		slog.Info("录像清理批次",
 			"reason", reason,
 			"total", len(recordings),
 			"to_delete", len(deleteIDs),
 			"failed", batchFailed,
 			"freed_bytes", batchFreed,
-			"files", fileNames,
+			"details", details,
 		)
 
 		// 批量删除数据库记录
